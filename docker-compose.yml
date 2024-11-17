@@ -1,0 +1,12 @@
+name: store-management-app
+
+services:
+  postgres:
+    image: bitnami/postgresql:13.16.0
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: management
+      POSTGRES_PASSWORD: management
+      POSTGRES_DB: store
