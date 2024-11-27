@@ -26,6 +26,7 @@ import {
   getSaleByIdRoute,
   updateSaleRoute,
 } from './routes/sales'
+import { shipmentsFreeMarketRoute } from './routes/shipment-free-market'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -56,6 +57,9 @@ app.register(getAllSalesRoute)
 app.register(getSaleByIdRoute)
 app.register(updateSaleRoute)
 app.register(deleteSaleRoute)
+
+//* Rota para atualizar o status de envio de um pedido
+app.register(shipmentsFreeMarketRoute)
 
 app.listen({ port: 3004 }).then(() => {
   console.log('HTTP server running')

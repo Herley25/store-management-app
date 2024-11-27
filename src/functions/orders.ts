@@ -10,7 +10,11 @@ export const createOrder = async (order: {
   price_total: string
   delivery_address: string
   status: string
+  substatus: string
   platform: string
+  platform_order_id: string
+  tracking_code: string
+  shipment_id: string
 }) => {
   try {
     const [createOrder] = await db.insert(orders).values(order).returning()
