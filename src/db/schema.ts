@@ -68,7 +68,11 @@ export const orders = pgTable('orders', {
   price_total: text('price_total').notNull(),
   delivery_address: text('delivery_address').notNull(),
   platform: text('platform').notNull(),
+  platform_order_id: text('platform_order_id').notNull(), // ID do pedido na plataforma externa
+  shipment_id: text('shipment_id').notNull(), // ID do envio (obtido via API)
+  tracking_code: text('tracking_code').notNull(), // Código de rastreio
   status: text('status').notNull(),
+  substatus: text('substatus').notNull(),
   date_order: timestamp('date_order', { withTimezone: true })
     .notNull()
     .defaultNow(),
