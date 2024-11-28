@@ -27,6 +27,13 @@ import {
   updateSaleRoute,
 } from './routes/sales'
 import { shipmentsFreeMarketRoute } from './routes/shipment-free-market'
+import {
+  createUserRoute,
+  deleteUserRoute,
+  getAllUsersRoute,
+  getUserByIdRoute,
+  updateUserRoute,
+} from './routes/users'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -36,6 +43,13 @@ app.register(fastifyCors, {
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
+
+//* Rotas de Usuários
+app.register(createUserRoute)
+app.register(getAllUsersRoute)
+app.register(getUserByIdRoute)
+app.register(updateUserRoute)
+app.register(deleteUserRoute)
 
 //* Rotas de produtos
 app.register(createProductRoute)
