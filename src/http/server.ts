@@ -34,6 +34,13 @@ import {
   getUserByIdRoute,
   updateUserRoute,
 } from './routes/users'
+import {
+  balanceSalesRoute,
+  getMonthlySalesReportRoute,
+  getPaymentHistoryRoute,
+  getSalesSummaryRoute,
+  getTransactionHistoryRoute,
+} from './routes/balance-sales'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -74,6 +81,13 @@ app.register(deleteSaleRoute)
 
 //* Rota para atualizar o status de envio de um pedido
 app.register(shipmentsFreeMarketRoute)
+
+//* Rota para relatórios e saldo de vendas
+app.register(balanceSalesRoute)
+app.register(getSalesSummaryRoute)
+app.register(getTransactionHistoryRoute)
+app.register(getMonthlySalesReportRoute)
+app.register(getPaymentHistoryRoute)
 
 app.listen({ port: 3004 }).then(() => {
   console.log('HTTP server running')
