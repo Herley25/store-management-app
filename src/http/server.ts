@@ -44,6 +44,7 @@ import {
 } from './routes/balance-sales'
 import fastifyJwt from '@fastify/jwt'
 import { env } from '../env'
+import { loginRoute, logoutRoute } from './routes/login'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -69,43 +70,51 @@ app.decorate(
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
-//* Rotas de Usuários
-app.register(createUserRoute)
-app.register(getAllUsersRoute)
-app.register(getUserByIdRoute)
-app.register(updateUserRoute)
-app.register(deleteUserRoute)
+//* Rota de login
+app.register(loginRoute)
+app.register(logoutRoute)
 
-//* Rotas de produtos
-app.register(createProductRoute)
-app.register(productsAllRoute)
-app.register(productsIdRoute)
-app.register(updateProductRoute)
-app.register(deleteProductRoute)
+app.register(async protectedRoutes => {
+  protectedRoutes.addHook('preHandler', app.authenticate)
 
-//* Rotas de pedidos
-app.register(createOrderRoute)
-app.register(getAllOrdersRoute)
-app.register(getOrderByIdRoute)
-app.register(updateOrderRoute)
-app.register(deleteOrderRoute)
+  //* Rotas de Usuários
+  app.register(createUserRoute)
+  app.register(getAllUsersRoute)
+  app.register(getUserByIdRoute)
+  app.register(updateUserRoute)
+  app.register(deleteUserRoute)
 
-//* Rotas de vendas
-app.register(createSaleRoute)
-app.register(getAllSalesRoute)
-app.register(getSaleByIdRoute)
-app.register(updateSaleRoute)
-app.register(deleteSaleRoute)
+  //* Rotas de produtos
+  app.register(createProductRoute)
+  app.register(productsAllRoute)
+  app.register(productsIdRoute)
+  app.register(updateProductRoute)
+  app.register(deleteProductRoute)
 
-//* Rota para atualizar o status de envio de um pedido
-app.register(shipmentsFreeMarketRoute)
+  //* Rotas de pedidos
+  app.register(createOrderRoute)
+  app.register(getAllOrdersRoute)
+  app.register(getOrderByIdRoute)
+  app.register(updateOrderRoute)
+  app.register(deleteOrderRoute)
 
-//* Rota para relatórios e saldo de vendas
-app.register(balanceSalesRoute)
-app.register(getSalesSummaryRoute)
-app.register(getTransactionHistoryRoute)
-app.register(getMonthlySalesReportRoute)
-app.register(getPaymentHistoryRoute)
+  //* Rotas de vendas
+  app.register(createSaleRoute)
+  app.register(getAllSalesRoute)
+  app.register(getSaleByIdRoute)
+  app.register(updateSaleRoute)
+  app.register(deleteSaleRoute)
+
+  //* Rota para atualizar o status de envio de um pedido
+  app.register(shipmentsFreeMarketRoute)
+
+  //* Rota para relatórios e saldo de vendas
+  app.register(balanceSalesRoute)
+  app.register(getSalesSummaryRoute)
+  app.register(getTransactionHistoryRoute)
+  app.register(getMonthlySalesReportRoute)
+  app.register(getPaymentHistoryRoute)
+})
 
 app.listen({ port: 3004 }).then(() => {
   console.log('HTTP server running')

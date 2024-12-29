@@ -50,6 +50,8 @@ export const getAllUsersRoute: FastifyPluginAsyncZod = async app => {
     try {
       const users = await getAllUsers()
 
+      console.log('USUÁRIOS ENCONTRADOS:', users)
+
       reply.send({ users })
     } catch (error) {
       console.error('Erro ao buscar os usuários:', error)
