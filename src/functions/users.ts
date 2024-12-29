@@ -1,6 +1,7 @@
 import { db } from '../db'
 import { eq } from 'drizzle-orm'
 import { users } from '../db/schema'
+import bcrypt from 'bcrypt'
 
 // Função para criar um usuário
 export const createUser = async (user: {
@@ -9,7 +10,23 @@ export const createUser = async (user: {
   password: string
 }) => {
   try {
-    const [createUser] = await db.insert(users).values(user).returning()
+    const existsUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, user.email))
+      .then(rows => rows[0]) // Retorna o primeiro usuário encontrado
+
+    if (existsUser) {
+      throw new Error('Usuário já existe')
+    }
+
+    // Criptografando a senha antes de salvar no banco de dados
+    const hashedPassword = await bcrypt.hash(user.password, 10)
+
+    const [createUser] = await db
+      .insert(users)
+      .values({ ...user, password: hashedPassword })
+      .returning({ id: users.id, username: users.username, email: users.email })
 
     return createUser
   } catch (error) {

@@ -1,5 +1,6 @@
 import fastifyCors from '@fastify/cors'
 import fastify from 'fastify'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import {
   serializerCompiler,
   validatorCompiler,
@@ -41,12 +42,29 @@ import {
   getSalesSummaryRoute,
   getTransactionHistoryRoute,
 } from './routes/balance-sales'
+import fastifyJwt from '@fastify/jwt'
+import { env } from '../env'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
 app.register(fastifyCors, {
   origin: '*',
 })
+
+app.register(fastifyJwt, {
+  secret: env.JWT_SECRET || '',
+})
+
+app.decorate(
+  'authenticate',
+  async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await request.jwtVerify()
+    } catch (err) {
+      reply.status(401).send({ message: 'Não autorizado' })
+    }
+  }
+)
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)

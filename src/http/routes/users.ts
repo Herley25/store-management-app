@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import z from 'zod'
+import '@fastify/jwt'
 import {
   createUser,
   deleteUser,
@@ -16,8 +17,8 @@ export const createUserRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         body: z.object({
           username: z.string(),
-          email: z.string(),
-          password: z.string(),
+          email: z.string().email(),
+          password: z.string().min(6),
         }),
       },
     },
@@ -27,7 +28,10 @@ export const createUserRoute: FastifyPluginAsyncZod = async app => {
 
         const user = await createUser({ username, email, password })
 
-        reply.send({ user })
+        // Gerar o token JWT
+        const token = app.jwt.sign({ id: user.id, email: user.email })
+
+        reply.send({ user, token })
       } catch (error) {
         console.error('Erro ao criar o usuário:', error)
 
