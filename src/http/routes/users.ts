@@ -80,6 +80,11 @@ export const getUserByIdRoute: FastifyPluginAsyncZod = async app => {
         const { id } = request.params
         const user = await getUserById(id)
 
+        // Retornar um erro 404 se o usuário não for encontrado
+        if (!user) {
+          return reply.status(404).send({ message: 'Usuário não encontrado' })
+        }
+
         reply.send({ user })
       } catch (error) {
         console.error('Erro ao buscar o usuário:', error)

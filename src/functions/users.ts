@@ -14,9 +14,8 @@ export const createUser = async (user: {
       .select()
       .from(users)
       .where(eq(users.email, user.email))
-      .then(rows => rows[0]) // Retorna o primeiro usuário encontrado
 
-    if (existsUser) {
+    if (existsUser.length > 0) {
       throw new Error('Usuário já existe')
     }
 
@@ -25,7 +24,11 @@ export const createUser = async (user: {
 
     const [createUser] = await db
       .insert(users)
-      .values({ ...user, password: hashedPassword })
+      .values({
+        username: user.username,
+        email: user.email,
+        password: hashedPassword,
+      })
       .returning({ id: users.id, username: users.username, email: users.email })
 
     return createUser
@@ -38,8 +41,7 @@ export const createUser = async (user: {
 // Função para buscar todos os usuários
 export const getAllUsers = async () => {
   try {
-    const [allUsers] = await db.select().from(users)
-
+    const allUsers = await db.select().from(users)
     return allUsers
   } catch (error) {
     console.log('Erro ao buscar os usuários', error)
@@ -50,7 +52,11 @@ export const getAllUsers = async () => {
 // Função para buscar um usuário
 export const getUserById = async (id: string) => {
   try {
-    const [getUserById] = await db.select().from(users).where(eq(users.id, id))
+    const getUserById = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1)
 
     return getUserById
   } catch (error) {

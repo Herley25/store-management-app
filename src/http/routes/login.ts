@@ -6,53 +6,53 @@ import { db } from '../../db'
 import { users } from '../../db/schema'
 
 // Rota para fazer login
-export const loginRoute: FastifyPluginAsyncZod = async app => {
-  app.post(
-    '/login',
-    {
-      schema: {
-        body: z.object({
-          email: z.string().email(),
-          password: z.string(),
-        }),
-      },
-    },
-    async (request, reply) => {
-      const { email, password } = request.body
+// export const loginRoute: FastifyPluginAsyncZod = async app => {
+//   app.post(
+//     '/login',
+//     {
+//       schema: {
+//         body: z.object({
+//           email: z.string().email(),
+//           password: z.string(),
+//         }),
+//       },
+//     },
+//     async (request, reply) => {
+//       const { email, password } = request.body
 
-      try {
-        // Buscando o usuário no banco de dados
-        const userArray = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email))
-          .limit(1)
-        const user = userArray[0]
+//       try {
+//         // Buscando o usuário no banco de dados
+//         const userArray = await db
+//           .select()
+//           .from(users)
+//           .where(eq(users.email, email))
+//           .limit(1)
+//         const user = userArray[0]
 
-        if (!user) {
-          return reply.status(401).send({ error: 'Credenciais inválidas' })
-        }
+//         if (!user) {
+//           return reply.status(401).send({ error: 'Credenciais inválidas' })
+//         }
 
-        // Verificando se a senha é válida
-        const isValidPassword = await bcrypt.compare(password, user.password)
-        if (!isValidPassword) {
-          return reply.status(401).send({ error: 'Credenciais inválidas' })
-        }
+//         // Verificando se a senha é válida
+//         const isValidPassword = await bcrypt.compare(password, user.password)
+//         if (!isValidPassword) {
+//           return reply.status(401).send({ error: 'Credenciais inválidas' })
+//         }
 
-        // Gerando um token JWT
-        const token = app.jwt.sign(
-          { id: user.id, email: user.email, username: user.username },
-          { expiresIn: '1h' }
-        )
+//         // Gerando um token JWT
+//         const token = app.jwt.sign(
+//           { id: user.id, email: user.email, username: user.username },
+//           { expiresIn: '1h' }
+//         )
 
-        reply.send({ token })
-      } catch (error) {
-        console.log('Erro ao fazer login', error)
-        reply.code(500).send({ error: 'Erro interno ao fazer login' })
-      }
-    }
-  )
-}
+//         reply.send({ token })
+//       } catch (error) {
+//         console.log('Erro ao fazer login', error)
+//         reply.code(500).send({ error: 'Erro interno ao fazer login' })
+//       }
+//     }
+//   )
+// }
 
 // Rota para fazer logout
 export const logoutRoute: FastifyPluginAsyncZod = async app => {

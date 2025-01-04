@@ -44,7 +44,7 @@ import {
 } from './routes/balance-sales'
 import fastifyJwt from '@fastify/jwt'
 import { env } from '../env'
-import { loginRoute, logoutRoute } from './routes/login'
+// import { loginRoute, logoutRoute } from './routes/login'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -56,65 +56,61 @@ app.register(fastifyJwt, {
   secret: env.JWT_SECRET || '',
 })
 
-app.decorate(
-  'authenticate',
-  async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await request.jwtVerify()
-    } catch (err) {
-      reply.status(401).send({ message: 'Não autorizado' })
-    }
-  }
-)
+// app.decorate(
+//   'authenticate',
+//   async (request: FastifyRequest, reply: FastifyReply) => {
+//     try {
+//       await request.jwtVerify()
+//     } catch (err) {
+//       reply.status(401).send({ message: 'Não autorizado' })
+//     }
+//   }
+// )
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
 //* Rota de login
-app.register(loginRoute)
-app.register(logoutRoute)
+// app.register(loginRoute)
+// app.register(logoutRoute)
 
-app.register(async protectedRoutes => {
-  protectedRoutes.addHook('preHandler', app.authenticate)
+//* Rotas de Usuários
+app.register(createUserRoute)
+app.register(getAllUsersRoute)
+app.register(getUserByIdRoute)
+app.register(updateUserRoute)
+app.register(deleteUserRoute)
 
-  //* Rotas de Usuários
-  app.register(createUserRoute)
-  app.register(getAllUsersRoute)
-  app.register(getUserByIdRoute)
-  app.register(updateUserRoute)
-  app.register(deleteUserRoute)
+//* Rotas de produtos
+app.register(createProductRoute)
+app.register(productsAllRoute)
+app.register(productsIdRoute)
+app.register(updateProductRoute)
+app.register(deleteProductRoute)
 
-  //* Rotas de produtos
-  app.register(createProductRoute)
-  app.register(productsAllRoute)
-  app.register(productsIdRoute)
-  app.register(updateProductRoute)
-  app.register(deleteProductRoute)
+//* Rotas de pedidos
+app.register(createOrderRoute)
+app.register(getAllOrdersRoute)
+app.register(getOrderByIdRoute)
+app.register(updateOrderRoute)
+app.register(deleteOrderRoute)
 
-  //* Rotas de pedidos
-  app.register(createOrderRoute)
-  app.register(getAllOrdersRoute)
-  app.register(getOrderByIdRoute)
-  app.register(updateOrderRoute)
-  app.register(deleteOrderRoute)
+//* Rotas de vendas
+app.register(createSaleRoute)
+app.register(getAllSalesRoute)
+app.register(getSaleByIdRoute)
+app.register(updateSaleRoute)
+app.register(deleteSaleRoute)
 
-  //* Rotas de vendas
-  app.register(createSaleRoute)
-  app.register(getAllSalesRoute)
-  app.register(getSaleByIdRoute)
-  app.register(updateSaleRoute)
-  app.register(deleteSaleRoute)
+//* Rota para atualizar o status de envio de um pedido
+app.register(shipmentsFreeMarketRoute)
 
-  //* Rota para atualizar o status de envio de um pedido
-  app.register(shipmentsFreeMarketRoute)
-
-  //* Rota para relatórios e saldo de vendas
-  app.register(balanceSalesRoute)
-  app.register(getSalesSummaryRoute)
-  app.register(getTransactionHistoryRoute)
-  app.register(getMonthlySalesReportRoute)
-  app.register(getPaymentHistoryRoute)
-})
+//* Rota para relatórios e saldo de vendas
+app.register(balanceSalesRoute)
+app.register(getSalesSummaryRoute)
+app.register(getTransactionHistoryRoute)
+app.register(getMonthlySalesReportRoute)
+app.register(getPaymentHistoryRoute)
 
 app.listen({ port: 3004 }).then(() => {
   console.log('HTTP server running')
