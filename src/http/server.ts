@@ -1,5 +1,6 @@
 import fastifyCors from '@fastify/cors'
 import fastify from 'fastify'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import {
   serializerCompiler,
   validatorCompiler,
@@ -55,60 +56,67 @@ app.register(fastifyJwt, {
   secret: env.JWT_SECRET || '',
 })
 
-// app.decorate(
-//   'authenticate',
-//   async (request: FastifyRequest, reply: FastifyReply) => {
-//     try {
-//       await request.jwtVerify()
-//     } catch (err) {
-//       reply.status(401).send({ message: 'Não autorizado' })
-//     }
-//   }
-// )
+const authenticate = async (request: FastifyRequest, reply: FastifyReply) => {
+  try {
+    console.log('Token recebido: ', request.headers.authorization)
+    await request.jwtVerify()
+  } catch (err) {
+    console.error('Erro ao verificar o token', err)
+    reply.code(401).send({ message: 'Token inválido ou ausente' })
+  }
+}
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
-//* Rota de login
-app.register(loginRoute)
+app.register(async publicRoutes => {
+  //* Rota de login
+  publicRoutes.register(loginRoute)
 
-//* Rotas de Usuários
-app.register(createUserRoute)
-app.register(getAllUsersRoute)
-app.register(getUserByIdRoute)
-app.register(updateUserRoute)
-app.register(deleteUserRoute)
+  //* Rotas de Usuários
+  publicRoutes.register(createUserRoute)
 
-//* Rotas de produtos
-app.register(createProductRoute)
-app.register(productsAllRoute)
-app.register(productsIdRoute)
-app.register(updateProductRoute)
-app.register(deleteProductRoute)
+  //* Rota para atualizar o status de envio de um pedido
+  publicRoutes.register(shipmentsFreeMarketRoute)
+})
 
-//* Rotas de pedidos
-app.register(createOrderRoute)
-app.register(getAllOrdersRoute)
-app.register(getOrderByIdRoute)
-app.register(updateOrderRoute)
-app.register(deleteOrderRoute)
+app.register(async protectedRoutes => {
+  protectedRoutes.addHook('preHandler', authenticate)
 
-//* Rotas de vendas
-app.register(createSaleRoute)
-app.register(getAllSalesRoute)
-app.register(getSaleByIdRoute)
-app.register(updateSaleRoute)
-app.register(deleteSaleRoute)
+  //* Rotas de Usuários
+  protectedRoutes.register(getAllUsersRoute)
+  protectedRoutes.register(getUserByIdRoute)
+  protectedRoutes.register(updateUserRoute)
+  protectedRoutes.register(deleteUserRoute)
 
-//* Rota para atualizar o status de envio de um pedido
-app.register(shipmentsFreeMarketRoute)
+  //* Rotas de produtos
+  protectedRoutes.register(createProductRoute)
+  protectedRoutes.register(productsAllRoute)
+  protectedRoutes.register(productsIdRoute)
+  protectedRoutes.register(updateProductRoute)
+  protectedRoutes.register(deleteProductRoute)
 
-//* Rota para relatórios e saldo de vendas
-app.register(balanceSalesRoute)
-app.register(getSalesSummaryRoute)
-app.register(getTransactionHistoryRoute)
-app.register(getMonthlySalesReportRoute)
-app.register(getPaymentHistoryRoute)
+  //* Rotas de pedidos
+  protectedRoutes.register(createOrderRoute)
+  protectedRoutes.register(getAllOrdersRoute)
+  protectedRoutes.register(getOrderByIdRoute)
+  protectedRoutes.register(updateOrderRoute)
+  protectedRoutes.register(deleteOrderRoute)
+
+  //* Rotas de vendas
+  protectedRoutes.register(createSaleRoute)
+  protectedRoutes.register(getAllSalesRoute)
+  protectedRoutes.register(getSaleByIdRoute)
+  protectedRoutes.register(updateSaleRoute)
+  protectedRoutes.register(deleteSaleRoute)
+
+  //* Rota para relatórios e saldo de vendas
+  protectedRoutes.register(balanceSalesRoute)
+  protectedRoutes.register(getSalesSummaryRoute)
+  protectedRoutes.register(getTransactionHistoryRoute)
+  protectedRoutes.register(getMonthlySalesReportRoute)
+  protectedRoutes.register(getPaymentHistoryRoute)
+})
 
 app.listen({ port: 3004 }).then(() => {
   console.log('HTTP server running')
