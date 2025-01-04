@@ -1,6 +1,5 @@
 import fastifyCors from '@fastify/cors'
 import fastify from 'fastify'
-import type { FastifyReply, FastifyRequest } from 'fastify'
 import {
   serializerCompiler,
   validatorCompiler,
@@ -44,7 +43,7 @@ import {
 } from './routes/balance-sales'
 import fastifyJwt from '@fastify/jwt'
 import { env } from '../env'
-// import { loginRoute, logoutRoute } from './routes/login'
+import { loginRoute } from './routes/login'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -71,8 +70,7 @@ app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
 //* Rota de login
-// app.register(loginRoute)
-// app.register(logoutRoute)
+app.register(loginRoute)
 
 //* Rotas de Usuários
 app.register(createUserRoute)

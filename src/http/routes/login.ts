@@ -1,64 +1,42 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { eq } from 'drizzle-orm'
 import z from 'zod'
-import bcrypt from 'bcrypt'
-import { db } from '../../db'
-import { users } from '../../db/schema'
+import { loginUser } from '../../functions/loginUser'
 
 // Rota para fazer login
-// export const loginRoute: FastifyPluginAsyncZod = async app => {
-//   app.post(
-//     '/login',
-//     {
-//       schema: {
-//         body: z.object({
-//           email: z.string().email(),
-//           password: z.string(),
-//         }),
-//       },
-//     },
-//     async (request, reply) => {
-//       const { email, password } = request.body
+export const loginRoute: FastifyPluginAsyncZod = async app => {
+  app.post(
+    '/login',
+    {
+      schema: {
+        body: z.object({
+          email: z.string().email(),
+          password: z.string().min(6),
+        }),
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { email, password } = request.body
 
-//       try {
-//         // Buscando o usuário no banco de dados
-//         const userArray = await db
-//           .select()
-//           .from(users)
-//           .where(eq(users.email, email))
-//           .limit(1)
-//         const user = userArray[0]
+        const login = await loginUser({ email, password })
 
-//         if (!user) {
-//           return reply.status(401).send({ error: 'Credenciais inválidas' })
-//         }
+        // Gerar o token JWT
+        const token = app.jwt.sign(
+          { id: login.id, email: login.email },
+          { expiresIn: '1h' }
+        )
 
-//         // Verificando se a senha é válida
-//         const isValidPassword = await bcrypt.compare(password, user.password)
-//         if (!isValidPassword) {
-//           return reply.status(401).send({ error: 'Credenciais inválidas' })
-//         }
-
-//         // Gerando um token JWT
-//         const token = app.jwt.sign(
-//           { id: user.id, email: user.email, username: user.username },
-//           { expiresIn: '1h' }
-//         )
-
-//         reply.send({ token })
-//       } catch (error) {
-//         console.log('Erro ao fazer login', error)
-//         reply.code(500).send({ error: 'Erro interno ao fazer login' })
-//       }
-//     }
-//   )
-// }
-
-// Rota para fazer logout
-export const logoutRoute: FastifyPluginAsyncZod = async app => {
-  app.post('/logout', async (request, reply) => {
-    reply.send({ message: 'Logout realizado com sucesso' })
-  })
+        // Retornar o token JWT e os dados do usuário
+        reply.send({ token, loginUser })
+      } catch (error) {
+        console.log('Erro ao fazer login', error)
+        reply.status(401).send({
+          message: 'Erro ao fazer login',
+          error: error instanceof Error ? error.message : 'Erro desconhecido',
+        })
+      }
+    }
+  )
 }
 
 //! refresh token opcional
