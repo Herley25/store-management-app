@@ -5,7 +5,7 @@ import { products, sales } from '../db/schema'
 // Função para obter o saldo de vendas
 export const balanceSales = async () => {
   try {
-    const [balanceSales] = await db
+    const balanceSales = await db
       .select({
         product_id: sales.product_id,
         total_sales: sum(
@@ -25,7 +25,7 @@ export const balanceSales = async () => {
 // Função para exibir lucros, comissões e custos por vendas
 export const getSalesSummary = async () => {
   try {
-    const [summary] = await db
+    const summary = await db
       .select({
         product_id: sales.product_id,
         product_name: products.name,
@@ -46,7 +46,7 @@ export const getSalesSummary = async () => {
 // Função para obter o histórico de transações e pagamentos
 export const getTransactionHistory = async () => {
   try {
-    const [history] = await db
+    const history = await db
       .select()
       .from(sales)
       .orderBy(desc(sales.date_sale))
@@ -61,7 +61,7 @@ export const getTransactionHistory = async () => {
 // Função para relatório mensal de vendas
 export const getMonthlySalesReport = async (month: number, year: number) => {
   try {
-    const [monthlySales] = await db
+    const monthlySales = await db
       .select({
         product_name: products.name,
         total_sales: sum(sql`${sales.quantity}::NUMERIC`),
@@ -83,14 +83,12 @@ export const getMonthlySalesReport = async (month: number, year: number) => {
 // Função para obter histórico de pagamentos e saldos pendentes
 export const getPaymentHistory = async () => {
   try {
-    const [paymentHistory] = await db
+    const paymentHistory = await db
       .select({
         product_name: products.name,
         total_sales: sum(sql`${sales.quantity}::NUMERIC`),
         total_payment: sum(sql`${sales.price_total}::NUMERIC`),
-        pending_payment: sum(
-          sql`${sales.price_total}::NUMERIC - ${sales.quantity}::NUMERIC`
-        ),
+        pending_payment: sql`SUM(${sales.price_total} - (${sales.quantity} * ${products.price_cost}))::NUMERIC`,
       })
       .from(sales)
       .innerJoin(products, eq(sales.product_id, products.id))
@@ -106,14 +104,12 @@ export const getPaymentHistory = async () => {
 // Função para obter histórico de pagamentos e saldos por plataforma
 export const getPlatformPaymentHistory = async () => {
   try {
-    const [platformPaymentHistory] = await db
+    const platformPaymentHistory = await db
       .select({
         platform: sales.platform,
         total_sales: sum(sql`${sales.quantity}::NUMERIC`),
         total_payment: sum(sql`${sales.price_total}::NUMERIC`),
-        pending_payment: sum(
-          sql`${sales.price_total}::NUMERIC - ${sales.quantity}::NUMERIC`
-        ),
+        pending_payment: sql`SUM(${sales.price_total} - (${sales.quantity} * ${products.price_cost}))::NUMERIC`,
       })
       .from(sales)
       .groupBy(sales.platform)

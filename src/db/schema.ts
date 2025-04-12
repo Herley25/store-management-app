@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, numeric } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
 
 // Define o schema da tabela usuários
@@ -25,9 +25,9 @@ export const products = pgTable('products', {
   name: text('name').notNull(),
   description: text('description').notNull(),
   category: text('category').notNull(),
-  price_sale: text('price_sale').notNull(),
-  price_cost: text('price_cost').notNull(),
-  stock: text('stock').notNull(),
+  price_sale: numeric('price_sale').notNull(),
+  price_cost: numeric('price_cost').notNull(),
+  stock: numeric('stock').notNull(),
   sku: text('sku').notNull().unique(),
   created_at: timestamp('created_at', { withTimezone: true })
     .notNull()
@@ -45,8 +45,8 @@ export const sales = pgTable('sales', {
   product_id: text('product_id')
     .references(() => products.id)
     .notNull(),
-  quantity: text('quantity').notNull(),
-  price_total: text('price_total').notNull(),
+  quantity: numeric('quantity').notNull(),
+  price_total: numeric('price_total').notNull(),
   platform: text('platform').notNull(),
   date_sale: timestamp('date_sale', { withTimezone: true })
     .notNull()
@@ -65,7 +65,7 @@ export const orders = pgTable('orders', {
     .references(() => products.id)
     .notNull(),
   quantity: text('quantity').notNull(),
-  price_total: text('price_total').notNull(),
+  price_total: numeric('price_total').notNull(),
   delivery_address: text('delivery_address').notNull(),
   platform: text('platform').notNull(),
   platform_order_id: text('platform_order_id').notNull(), // ID do pedido na plataforma externa
