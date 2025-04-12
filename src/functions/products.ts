@@ -2,18 +2,8 @@ import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import { products } from '../db/schema'
 
-// Função para retornar todos os produtos
-export const getAllProducts = async () => {
-  return await db.select().from(products)
-}
-
-// Função para retornar um produto pelo ID
-export const getProductById = async (id: string) => {
-  return await db.select().from(products).where(eq(products.id, id))
-}
-
-// Função para criar um produto
-export const createProduct = async (product: {
+// Tipo para as informações do produto
+export interface ProductInput {
   name: string
   description: string
   category: string
@@ -21,16 +11,43 @@ export const createProduct = async (product: {
   price_cost: string
   stock: string
   sku: string
-}) => {
+}
+
+// Função para retornar todos os produtos
+export const getAllProducts = async () => {
   try {
-    const [createProduct] = await db
+    return await db.select().from(products)
+  } catch (error) {
+    console.error('Erro ao buscar todos os produtos', error)
+    throw new Error('Erro ao buscar todos os produtos')
+  }
+}
+
+// Função para retornar um produto pelo ID
+export const getProductById = async (id: string) => {
+  try {
+    const product = await db.select().from(products).where(eq(products.id, id))
+    return product
+  } catch (error) {
+    console.error('Erro ao buscar produto por ID', error)
+    throw new Error('Erro ao buscar produto por ID')
+  }
+}
+
+// Função para criar um produto
+export const createProduct = async (product: ProductInput) => {
+  try {
+    const [createdProduct] = await db
       .insert(products)
-      .values(product)
+      .values({
+        ...product,
+        sku: product.sku ?? null, // Substituindo undefined por null
+      })
       .returning()
 
-    return createProduct
+    return createdProduct
   } catch (error) {
-    console.log('Erro ao criar o produto', error)
+    console.error('Erro ao criar o produto', error)
     throw new Error('Erro ao criar o produto')
   }
 }
@@ -38,24 +55,21 @@ export const createProduct = async (product: {
 // Função para atualizar um produto
 export const updateProduct = async (
   id: string,
-  name: string,
-  description: string,
-  category: string,
-  price_sale: string,
-  price_cost: string,
-  stock: string,
-  sku: string
+  product: ProductInput
 ) => {
   try {
-    const [updateProduct] = await db
+    const [updatedProduct] = await db
       .update(products)
-      .set({ name, description, category, price_sale, price_cost, stock, sku })
+      .set({
+        ...product,
+        sku: product.sku ?? null, // Substituindo undefined por null
+      })
       .where(eq(products.id, id))
       .returning()
 
-    return updateProduct
+    return updatedProduct
   } catch (error) {
-    console.log('Erro ao atualizar o produto', error)
+    console.error('Erro ao atualizar o produto', error)
     throw new Error('Erro ao atualizar o produto')
   }
 }
@@ -63,14 +77,14 @@ export const updateProduct = async (
 // Função para deletar um produto
 export const deleteProduct = async (id: string) => {
   try {
-    const [deleteProduct] = await db
+    const [deletedProduct] = await db
       .delete(products)
       .where(eq(products.id, id))
       .returning()
 
-    return deleteProduct
+    return deletedProduct
   } catch (error) {
-    console.log('Erro ao deletar o produto', error)
+    console.error('Erro ao deletar o produto', error)
     throw new Error('Erro ao deletar o produto')
   }
 }

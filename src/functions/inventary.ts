@@ -2,7 +2,7 @@ import { db } from '../db'
 import { eq } from 'drizzle-orm'
 import { products } from '../db/schema'
 
-// Função para atualizar o estoque após uma venda
+// Atualiza o estoque após uma venda
 export const updateStockAfterSale = async (
   product_id: string,
   quantity_sold: number
@@ -13,22 +13,34 @@ export const updateStockAfterSale = async (
       .from(products)
       .where(eq(products.id, product_id))
 
-    const stock = Number(product.stock) - quantity_sold
+    if (!product) {
+      throw new Error('Produto não encontrado')
+    }
+
+    const currentStock = Number(product.stock)
+    if (isNaN(currentStock)) {
+      throw new Error('Estoque atual inválido')
+    }
+
+    const newStock = currentStock - quantity_sold
+    if (newStock < 0) {
+      throw new Error('Estoque insuficiente para a venda')
+    }
 
     const [updateProduct] = await db
       .update(products)
-      .set({ stock: stock.toString() })
+      .set({ stock: newStock.toString() })
       .where(eq(products.id, product_id))
       .returning()
 
     return updateProduct
   } catch (error) {
-    console.log('Erro ao atualizar o estoque', error)
+    console.error('Erro ao atualizar o estoque:', error)
     throw new Error('Erro ao atualizar o estoque')
   }
 }
 
-// Função para notificar estoque baixo
+// Notifica se o estoque estiver baixo
 export const notifyLowStock = async (product_id: string) => {
   try {
     const [product] = await db
@@ -38,11 +50,21 @@ export const notifyLowStock = async (product_id: string) => {
       .limit(1)
       .execute()
 
-    if (product && Number(product.stock) < 5) {
-      console.log(`Produto ${product.name} com estoque baixo`)
+    if (!product) {
+      throw new Error('Produto não encontrado')
+    }
+
+    const stock = Number(product.stock)
+    if (isNaN(stock)) {
+      throw new Error('Estoque inválido')
+    }
+
+    if (stock < 5) {
+      // Aqui futuramente pode integrar com e-mail, Discord, etc.
+      console.warn(`⚠️ Produto "${product.name}" com estoque baixo (${stock})`)
     }
   } catch (error) {
-    console.log('Erro ao notificar estoque baixo', error)
+    console.error('Erro ao notificar estoque baixo:', error)
     throw new Error('Erro ao notificar estoque baixo')
   }
 }

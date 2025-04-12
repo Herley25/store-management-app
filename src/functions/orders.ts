@@ -29,7 +29,7 @@ export const createOrder = async (order: {
 // Função para buscar todos os pedidos
 export const getAllOrders = async () => {
   try {
-    const [allOrders] = await db.select().from(orders)
+    const allOrders = await db.select().from(orders)
 
     return allOrders
   } catch (error) {
@@ -45,6 +45,10 @@ export const getOrderById = async (id: string) => {
       .select()
       .from(orders)
       .where(eq(orders.id, id))
+
+    if (!getOrderById) {
+      throw new Error('Pedido não encontrado')
+    }
 
     return getOrderById
   } catch (error) {
@@ -79,6 +83,10 @@ export const updateOrder = async (
       .where(eq(orders.id, id))
       .returning()
 
+    if (!updateOrder) {
+      throw new Error('Pedido não encontrado para atualização')
+    }
+
     return updateOrder
   } catch (error) {
     console.log('Erro ao atualizar o pedido', error)
@@ -93,6 +101,10 @@ export const deleteOrder = async (id: string) => {
       .delete(orders)
       .where(eq(orders.id, id))
       .returning()
+
+    if (!deleteOrder) {
+      throw new Error('Pedido não encontrado para exclusão')
+    }
 
     return deleteOrder
   } catch (error) {

@@ -1,21 +1,34 @@
 import nodemailer from 'nodemailer'
 
 export const sendAdminNotification = async (
-  subject: string,
-  message: string
+  subject = 'Notificação do sistema',
+  message = 'Mensagem não especificada.'
 ) => {
+  const adminEmail = process.env.ADMIN_EMAIL
+  const adminPassword = process.env.ADMIN_EMAIL_PASSWORD
+
+  if (!adminEmail || !adminPassword) {
+    console.error('Variáveis de ambiente para o e-mail do admin não definidas.')
+    return
+  }
+
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL, // Administrador email
-      pass: process.env.PASSWORD, // Admin password
+      user: adminEmail,
+      pass: adminPassword,
     },
   })
 
-  await transporter.sendMail({
-    from: process.env.EMAIL, // Email do administrador
-    to: process.env.EMAIL, // Enviar notificação para o email do administrador
-    subject: subject, // Assunto da notificação
-    text: message, // Mensagem da notificação
-  })
+  try {
+    await transporter.sendMail({
+      from: adminEmail,
+      to: adminEmail,
+      subject,
+      text: message,
+    })
+    console.log(`Notificação enviada para o administrador: ${subject}`)
+  } catch (error) {
+    console.error('Erro ao enviar notificação por e-mail:', error)
+  }
 }

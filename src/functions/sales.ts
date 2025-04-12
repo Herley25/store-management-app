@@ -2,19 +2,25 @@ import { db } from '../db'
 import { eq } from 'drizzle-orm'
 import { sales } from '../db/schema'
 
-// Função para criar uma venda
-export const createSale = async (sale: {
+// Tipo para as informações da venda
+export interface SaleInput {
   product_id: string
   quantity: string
   price_total: string
   platform: string
-}) => {
-  try {
-    const [createSale] = await db.insert(sales).values(sale).returning()
+}
 
-    return createSale
+// Função para criar uma venda
+export const createSale = async (sale: SaleInput) => {
+  try {
+    const [createdSale] = await db
+      .insert(sales)
+      .values(sale)
+      .returning()
+
+    return createdSale
   } catch (error) {
-    console.log('Erro ao criar a venda', error)
+    console.error('Erro ao criar a venda', error)
     throw new Error('Erro ao criar a venda')
   }
 }
@@ -22,48 +28,42 @@ export const createSale = async (sale: {
 // Função para buscar todas as vendas
 export const getAllSales = async () => {
   try {
-    const [allSales] = await db.select().from(sales)
-
+    const allSales = await db.select().from(sales)
     return allSales
   } catch (error) {
-    console.log('Erro ao buscar as vendas', error)
-    throw new Error('Erro ao buscar as vendas')
+    console.error('Erro ao buscar todas as vendas', error)
+    throw new Error('Erro ao buscar todas as vendas')
   }
 }
 
-// Função para buscar uma venda
+// Função para buscar uma venda por ID
 export const getSaleById = async (id: string) => {
   try {
-    const [getProductById] = await db
+    const sale = await db
       .select()
       .from(sales)
       .where(eq(sales.id, id))
+      .then(results => results[0]) // Garantir que retorne apenas um único item
 
-    return getProductById
+    return sale
   } catch (error) {
-    console.log('Erro ao buscar a venda', error)
-    throw new Error('Erro ao buscar a venda')
+    console.error('Erro ao buscar a venda por ID', error)
+    throw new Error('Erro ao buscar a venda por ID')
   }
 }
 
 // Função para atualizar uma venda
-export const updateSale = async (
-  id: string,
-  product_id: string,
-  quantity: string,
-  price_total: string,
-  platform: string
-) => {
+export const updateSale = async (id: string, sale: SaleInput) => {
   try {
-    const [updateSale] = await db
+    const [updatedSale] = await db
       .update(sales)
-      .set({ product_id, quantity, price_total, platform })
+      .set(sale)
       .where(eq(sales.id, id))
       .returning()
 
-    return updateSale
+    return updatedSale
   } catch (error) {
-    console.log('Erro ao atualizar a venda', error)
+    console.error('Erro ao atualizar a venda', error)
     throw new Error('Erro ao atualizar a venda')
   }
 }
@@ -71,14 +71,14 @@ export const updateSale = async (
 // Função para deletar uma venda
 export const deleteSale = async (id: string) => {
   try {
-    const [deleteSale] = await db
+    const [deletedSale] = await db
       .delete(sales)
       .where(eq(sales.id, id))
       .returning()
 
-    return deleteSale
+    return deletedSale
   } catch (error) {
-    console.log('Erro ao deletar a venda', error)
+    console.error('Erro ao deletar a venda', error)
     throw new Error('Erro ao deletar a venda')
   }
 }
