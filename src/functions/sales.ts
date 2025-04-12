@@ -5,7 +5,7 @@ import { sales } from '../db/schema'
 // Tipo para as informações da venda
 export interface SaleInput {
   product_id: string
-  quantity: string
+  quantity: number
   price_total: string
   platform: string
 }

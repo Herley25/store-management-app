@@ -1,5 +1,6 @@
 import { pgTable, text, timestamp, numeric } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
+import { integer } from 'drizzle-orm/pg-core'
 
 // Define o schema da tabela usuários
 export const users = pgTable('users', {
@@ -45,7 +46,7 @@ export const sales = pgTable('sales', {
   product_id: text('product_id')
     .references(() => products.id)
     .notNull(),
-  quantity: numeric('quantity').notNull(),
+  quantity: integer('quantity').notNull(),
   price_total: numeric('price_total').notNull(),
   platform: text('platform').notNull(),
   date_sale: timestamp('date_sale', { withTimezone: true })
@@ -64,7 +65,7 @@ export const orders = pgTable('orders', {
   product_id: text('product_id')
     .references(() => products.id)
     .notNull(),
-  quantity: text('quantity').notNull(),
+  quantity: integer('quantity').notNull(),
   price_total: numeric('price_total').notNull(),
   delivery_address: text('delivery_address').notNull(),
   platform: text('platform').notNull(),

@@ -6,7 +6,7 @@ import { orders } from '../db/schema'
 export const createOrder = async (order: {
   user_id: string
   product_id: string
-  quantity: string
+  quantity: number
   price_total: string
   delivery_address: string
   status: string
@@ -62,8 +62,8 @@ export const updateOrder = async (
   id: string,
   user_id: string,
   product_id: string,
-  quantity: string,
-  price_total: string,
+  quantity: number,
+  price_total: number ,
   delivery_address: string,
   status: string,
   platform: string
@@ -75,7 +75,7 @@ export const updateOrder = async (
         user_id,
         product_id,
         quantity,
-        price_total,
+        price_total: String(price_total),
         delivery_address,
         status,
         platform,

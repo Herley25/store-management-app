@@ -18,7 +18,7 @@ export const updateStockAfterSale = async (
     }
 
     const currentStock = Number(product.stock)
-    if (isNaN(currentStock)) {
+    if (Number.isNaN(currentStock)) {
       throw new Error('Estoque atual inválido')
     }
 
@@ -55,7 +55,7 @@ export const notifyLowStock = async (product_id: string) => {
     }
 
     const stock = Number(product.stock)
-    if (isNaN(stock)) {
+    if (Number.isNaN(stock)) {
       throw new Error('Estoque inválido')
     }
 
