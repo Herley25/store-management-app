@@ -6,7 +6,7 @@ import { orders } from '../db/schema'
 export const createOrder = async (order: {
   user_id: string
   product_id: string
-  quantity: string
+  quantity: number
   price_total: string
   delivery_address: string
   status: string
@@ -29,7 +29,7 @@ export const createOrder = async (order: {
 // Função para buscar todos os pedidos
 export const getAllOrders = async () => {
   try {
-    const [allOrders] = await db.select().from(orders)
+    const allOrders = await db.select().from(orders)
 
     return allOrders
   } catch (error) {
@@ -46,6 +46,10 @@ export const getOrderById = async (id: string) => {
       .from(orders)
       .where(eq(orders.id, id))
 
+    if (!getOrderById) {
+      throw new Error('Pedido não encontrado')
+    }
+
     return getOrderById
   } catch (error) {
     console.log('Erro ao buscar o pedido', error)
@@ -58,8 +62,8 @@ export const updateOrder = async (
   id: string,
   user_id: string,
   product_id: string,
-  quantity: string,
-  price_total: string,
+  quantity: number,
+  price_total: number ,
   delivery_address: string,
   status: string,
   platform: string
@@ -71,13 +75,17 @@ export const updateOrder = async (
         user_id,
         product_id,
         quantity,
-        price_total,
+        price_total: String(price_total),
         delivery_address,
         status,
         platform,
       })
       .where(eq(orders.id, id))
       .returning()
+
+    if (!updateOrder) {
+      throw new Error('Pedido não encontrado para atualização')
+    }
 
     return updateOrder
   } catch (error) {
@@ -93,6 +101,10 @@ export const deleteOrder = async (id: string) => {
       .delete(orders)
       .where(eq(orders.id, id))
       .returning()
+
+    if (!deleteOrder) {
+      throw new Error('Pedido não encontrado para exclusão')
+    }
 
     return deleteOrder
   } catch (error) {

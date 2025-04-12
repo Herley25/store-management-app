@@ -27,7 +27,7 @@ export const loginRoute: FastifyPluginAsyncZod = async app => {
         )
 
         // Retornar o token JWT e os dados do usuário
-        reply.send({ token, loginUser })
+        reply.send({ token, user: login })
       } catch (error) {
         console.log('Erro ao fazer login', error)
         reply.status(401).send({

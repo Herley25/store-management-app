@@ -3,6 +3,50 @@ import { eq } from 'drizzle-orm'
 import { users } from '../db/schema'
 import bcrypt from 'bcrypt'
 
+// Função genérica para buscar um usuário por ID
+const getUserByIdGeneric = async (id: string) => {
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1)
+  return user
+}
+
+// Função genérica para atualizar um usuário
+const updateUserGeneric = async (id: string, updateData: object) => {
+  const [updatedUser] = await db
+    .update(users)
+    .set(updateData)
+    .where(eq(users.id, id))
+    .returning()
+  return updatedUser
+}
+
+// Função genérica para deletar um usuário
+const deleteUserGeneric = async (id: string) => {
+  const [deletedUser] = await db
+    .delete(users)
+    .where(eq(users.id, id))
+    .returning()
+  return deletedUser
+}
+
+
+// Função para verificar se o usuário já existe
+const userExists = async (email: string) => {
+  const exists = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+  return exists.length > 0
+}
+
+// Função para criptografar a senha
+const hashPassword = async (password: string) => {
+  return await bcrypt.hash(password, 10)
+}
+
 // Função para criar um usuário
 export const createUser = async (user: {
   username: string
@@ -10,17 +54,12 @@ export const createUser = async (user: {
   password: string
 }) => {
   try {
-    const existsUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, user.email))
-
-    if (existsUser.length > 0) {
+    if (await userExists(user.email)) {
       throw new Error('Usuário já existe')
     }
 
     // Criptografando a senha antes de salvar no banco de dados
-    const hashedPassword = await bcrypt.hash(user.password, 10)
+    const hashedPassword = await hashPassword(user.password)
 
     const [createUser] = await db
       .insert(users)
@@ -52,13 +91,7 @@ export const getAllUsers = async () => {
 // Função para buscar um usuário
 export const getUserById = async (id: string) => {
   try {
-    const getUserById = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, id))
-      .limit(1)
-
-    return getUserById
+    return await getUserByIdGeneric(id)
   } catch (error) {
     console.log('Erro ao buscar o usuário', error)
     throw new Error('Erro ao buscar o usuário')
@@ -73,13 +106,12 @@ export const updateUser = async (
   password: string
 ) => {
   try {
-    const [updateUser] = await db
-      .update(users)
-      .set({ username, email, password })
-      .where(eq(users.id, id))
-      .returning()
+    // Se a senha for modificada, criptografa a nova senha
+    const updatedData = password
+      ? { username, email, password: await hashPassword(password) }
+      : { username, email }
 
-    return updateUser
+    return await updateUserGeneric(id, updatedData)
   } catch (error) {
     console.log('Erro ao atualizar o usuário', error)
     throw new Error('Erro ao atualizar o usuário')
@@ -89,12 +121,7 @@ export const updateUser = async (
 // Função para deletar um usuário
 export const deleteUser = async (id: string) => {
   try {
-    const [deleteUser] = await db
-      .delete(users)
-      .where(eq(users.id, id))
-      .returning()
-
-    return deleteUser
+    return await deleteUserGeneric(id)
   } catch (error) {
     console.log('Erro ao deletar o usuário', error)
     throw new Error('Erro ao deletar o usuário')
