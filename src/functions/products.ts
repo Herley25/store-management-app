@@ -7,9 +7,9 @@ export interface ProductInput {
   name: string
   description: string
   category: string
-  price_sale: string
-  price_cost: string
-  stock: string
+  price_sale: number
+  price_cost: number
+  stock: number
   sku: string
 }
 
@@ -41,7 +41,10 @@ export const createProduct = async (product: ProductInput) => {
       .insert(products)
       .values({
         ...product,
-        sku: product.sku ?? null, // Substituindo undefined por null
+        price_sale: product.price_sale.toString(),
+        price_cost: product.price_cost.toString(),
+        stock: product.stock.toString(),
+        sku: product.sku ?? null,
       })
       .returning()
 
@@ -53,16 +56,16 @@ export const createProduct = async (product: ProductInput) => {
 }
 
 // Função para atualizar um produto
-export const updateProduct = async (
-  id: string,
-  product: ProductInput
-) => {
+export const updateProduct = async (id: string, product: ProductInput) => {
   try {
     const [updatedProduct] = await db
       .update(products)
       .set({
         ...product,
-        sku: product.sku ?? null, // Substituindo undefined por null
+        price_sale: product.price_sale.toString(),
+        price_cost: product.price_cost.toString(),
+        stock: product.stock.toString(),
+        sku: product.sku ?? null,
       })
       .where(eq(products.id, id))
       .returning()

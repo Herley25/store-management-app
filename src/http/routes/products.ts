@@ -50,9 +50,9 @@ export const createProductRoute: FastifyPluginAsyncZod = async app => {
           name: z.string(),
           description: z.string(),
           category: z.string(),
-          price_sale: z.string(),
-          price_cost: z.string(),
-          stock: z.string(),
+          price_sale: z.string().transform(value => Number.parseFloat(value)),
+          price_cost: z.string().transform(value => Number.parseFloat(value)),
+          stock: z.string().transform(value => Number.parseInt(value)),
           sku: z.string(),
         }),
       },
@@ -99,9 +99,9 @@ export const updateProductRoute: FastifyPluginAsyncZod = async app => {
           name: z.string(),
           description: z.string(),
           category: z.string(),
-          price_sale: z.string(),
-          price_cost: z.string(),
-          stock: z.string(),
+          price_sale: z.string().transform(value => Number.parseFloat(value)),
+          price_cost: z.string().transform(value => Number.parseFloat(value)),
+          stock: z.string().transform(value => Number.parseInt(value)),
           sku: z.string(),
         }),
       },
@@ -120,16 +120,15 @@ export const updateProductRoute: FastifyPluginAsyncZod = async app => {
         } = request.body
 
         // chamada para atualizar o produto
-        const product = await updateProduct(
-          id,
+        const product = await updateProduct(id, {
           name,
           description,
           category,
           price_sale,
           price_cost,
           stock,
-          sku
-        )
+          sku,
+        })
 
         reply.send({ message: 'Produto atualizado com sucesso', product })
       } catch (error) {
