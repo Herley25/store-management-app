@@ -26,6 +26,12 @@ export const shipmentsFreeMarketRoute: FastifyPluginAsyncZod = async app => {
     async (request, reply) => {
       const access_token = env.ACCESS_TOKEN_MARKET_FREE
 
+      if (!access_token) {
+        return reply.status(500).send({
+          message: 'Token de acesso do mercado livre não configurado',
+        })
+      }
+
       try {
         const { id } = request.params
         const { status, tracking_code } = request.body
