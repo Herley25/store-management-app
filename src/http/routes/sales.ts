@@ -16,7 +16,7 @@ export const createSaleRoute: FastifyPluginAsyncZod = async app => {
       schema: {
         body: z.object({
           product_id: z.string(),
-          quantity: z.string(),
+          quantity: z.number(),
           price_total: z.string(),
           platform: z.string(),
         }),
@@ -42,7 +42,7 @@ export const createSaleRoute: FastifyPluginAsyncZod = async app => {
 
 // Rota para buscar todas as vendas
 export const getAllSalesRoute: FastifyPluginAsyncZod = async app => {
-  app.get('/sales', async (request, reply) => {
+  app.get('/sales', async (_request, reply) => {
     try {
       const sales = await getAllSales()
 
@@ -88,7 +88,7 @@ export const updateSaleRoute: FastifyPluginAsyncZod = async app => {
         }),
         body: z.object({
           product_id: z.string(),
-          quantity: z.string(),
+          quantity: z.number(),
           price_total: z.string(),
           platform: z.string(),
         }),
@@ -99,13 +99,12 @@ export const updateSaleRoute: FastifyPluginAsyncZod = async app => {
         const { id } = request.params
         const { product_id, quantity, price_total, platform } = request.body
 
-        const sale = await updateSale(
-          id,
+        const sale = await updateSale(id, {
           product_id,
           quantity,
           price_total,
-          platform
-        )
+          platform,
+        })
 
         reply.send({ sale })
       } catch (error) {
