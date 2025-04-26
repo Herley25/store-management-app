@@ -109,8 +109,8 @@ export const updateUserRoute: FastifyPluginAsyncZod = async app => {
         }),
         body: z.object({
           username: z.string(),
-          email: z.string(),
-          password: z.string(),
+          email: z.string().email(),
+          password: z.string().min(6),
         }),
       },
     },
